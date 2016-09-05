@@ -15,12 +15,13 @@ main =
 
 
 type alias Model =
-    Time
+    { time : Time
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( 0, Cmd.none )
+    ( { time = 0 }, Cmd.none )
 
 
 type Msg
@@ -31,7 +32,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick newTime ->
-            ( newTime, Cmd.none )
+            ( { model | time = newTime }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -42,5 +43,6 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     model
+        |> .time
         |> toString
         |> text
