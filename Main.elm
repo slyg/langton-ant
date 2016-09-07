@@ -1,6 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, span, text)
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (style)
 import Html.App as App
 import Time exposing (Time, second)
 import Matrix exposing (Matrix, matrix)
@@ -46,7 +47,7 @@ initTile =
 init : ( Model, Cmd Msg )
 init =
     ( { time = 0
-      , tileMap = matrix 5 5 (\location -> initTile)
+      , tileMap = matrix 10 10 (\location -> initTile)
       }
     , Cmd.none
     )
@@ -70,12 +71,26 @@ subscriptions model =
 
 viewTile : Tile -> Html Msg
 viewTile tile =
-    case tile.color of
-        White ->
-            span [] [ text "w" ]
+    let
+        commonStyle =
+            [ ( "width", "30px" )
+            , ( "height", "30px" )
+            , ( "padding", "0" )
+            , ( "margin", "0" )
+            , ( "display", "inline-block" )
+            ]
+    in
+        case tile.color of
+            White ->
+                div [ style (( "backgroundColor", "lightgrey" ) :: commonStyle) ] []
 
-        Black ->
-            span [] [ text "b" ]
+            Black ->
+                div [ style (( "backgroundColor", "black" ) :: commonStyle) ] []
+
+
+viewTilesRow : List Tile -> Html Msg
+viewTilesRow tilesRow =
+    div [ style [ ( "lineHeight", "0" ) ] ] (List.map (\tile -> viewTile tile) tilesRow)
 
 
 view : Model -> Html Msg
@@ -84,7 +99,7 @@ view model =
         tiles =
             model
                 |> .tileMap
-                |> Matrix.flatten
-                |> List.map (\tile -> viewTile tile)
+                |> Matrix.toList
+                |> List.map (\tileRow -> viewTilesRow tileRow)
     in
         div [] tiles
