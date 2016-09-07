@@ -39,7 +39,7 @@ type alias TileMap =
 
 
 type alias Model =
-    { time : Time
+    { frame : Int
     , tileMap : TileMap
     , currentLocation : Matrix.Location
     , currentDirection : Direction
@@ -67,7 +67,7 @@ initMatrix =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { time = 0
+    ( { frame = 0
       , tileMap = initMatrix
       , currentLocation = ( 4, 4 )
       , currentDirection = Top
@@ -83,8 +83,8 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Tick newTime ->
-            ( { model | time = newTime }, Cmd.none )
+        Tick _ ->
+            ( { model | frame = model.frame + 1 }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -131,5 +131,13 @@ view model =
                 |> .tileMap
                 |> Matrix.toList
                 |> List.map (\tileRow -> viewTilesRow tileRow)
+
+        frame =
+            model
+                |> .frame
+                |> toString
     in
-        div [] tiles
+        div []
+            [ div [] tiles
+            , div [] [ text ("frame " ++ frame) ]
+            ]
