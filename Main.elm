@@ -53,10 +53,22 @@ initTile =
     }
 
 
+initMatrix : TileMap
+initMatrix =
+    let
+        initialMatrix =
+            matrix 10 10 (\location -> initTile)
+    in
+        Matrix.update
+            ( 4, 4 )
+            (\tile -> { tile | current = True })
+            initialMatrix
+
+
 init : ( Model, Cmd Msg )
 init =
     ( { time = 0
-      , tileMap = matrix 10 10 (\location -> initTile)
+      , tileMap = initMatrix
       , currentLocation = ( 4, 4 )
       , currentDirection = Top
       }
@@ -83,13 +95,20 @@ subscriptions model =
 viewTile : Tile -> Html Msg
 viewTile tile =
     let
+        emphaseStyle =
+            if tile.current then
+                ( "borderRadius", "30px 30px" )
+            else
+                ( "borderRadius", "0px 0px" )
+
         commonStyle =
-            [ ( "width", "30px" )
-            , ( "height", "30px" )
-            , ( "padding", "0" )
-            , ( "margin", "0" )
-            , ( "display", "inline-block" )
-            ]
+            emphaseStyle
+                :: [ ( "width", "30px" )
+                   , ( "height", "30px" )
+                   , ( "padding", "0" )
+                   , ( "margin", "1px" )
+                   , ( "display", "inline-block" )
+                   ]
     in
         case tile.color of
             White ->
