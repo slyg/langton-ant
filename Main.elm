@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, span, text)
 import Html.App as App
 import Time exposing (Time, second)
 import Matrix exposing (Matrix, matrix)
@@ -21,7 +21,9 @@ type Color
 
 
 type alias Tile =
-    { color : Color }
+    { color : Color
+    , current : Bool
+    }
 
 
 type alias TileMap =
@@ -34,10 +36,17 @@ type alias Model =
     }
 
 
+initTile : Tile
+initTile =
+    { color = White
+    , current = False
+    }
+
+
 init : ( Model, Cmd Msg )
 init =
     ( { time = 0
-      , tileMap = matrix 5 5 (\location -> { color = White })
+      , tileMap = matrix 5 5 (\location -> initTile)
       }
     , Cmd.none
     )
@@ -63,10 +72,10 @@ viewTile : Tile -> Html Msg
 viewTile tile =
     case tile.color of
         White ->
-            div [] [ text "w" ]
+            span [] [ text "w" ]
 
         Black ->
-            div [] [ text "b" ]
+            span [] [ text "b" ]
 
 
 view : Model -> Html Msg
