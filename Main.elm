@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (Html, text)
 import Html.App as App
 import Time exposing (Time, second)
+import Matrix exposing (Matrix, matrix)
 
 
 main =
@@ -14,14 +15,32 @@ main =
         }
 
 
+type Color
+    = White
+    | Black
+
+
+type alias Tile =
+    { color : Color }
+
+
+type alias TileMap =
+    Matrix Tile
+
+
 type alias Model =
     { time : Time
+    , tileMap : TileMap
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { time = 0 }, Cmd.none )
+    ( { time = 0
+      , tileMap = matrix 5 5 (\location -> { color = White })
+      }
+    , Cmd.none
+    )
 
 
 type Msg
