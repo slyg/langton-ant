@@ -102,20 +102,57 @@ update msg model =
     case msg of
         Tick _ ->
             let
+                currentXLocation =
+                    Matrix.row model.currentLocation
+
+                currentYLocation =
+                    Matrix.col model.currentLocation
+
                 newXLocation =
-                    (Matrix.row model.currentLocation) + 1
+                    case model.currentDirection of
+                        Right ->
+                            currentXLocation + 1
+
+                        Left ->
+                            currentXLocation - 1
+
+                        _ ->
+                            currentXLocation
 
                 newYLocation =
-                    (Matrix.col model.currentLocation) + 1
+                    case model.currentDirection of
+                        Top ->
+                            currentYLocation + 1
+
+                        Bottom ->
+                            currentYLocation - 1
+
+                        _ ->
+                            currentYLocation
 
                 newLocation =
                     ( newXLocation
                     , newYLocation
                     )
+
+                newDirection =
+                    case model.currentDirection of
+                        Top ->
+                            Right
+
+                        Right ->
+                            Bottom
+
+                        Bottom ->
+                            Left
+
+                        Left ->
+                            Top
             in
                 ( { model
                     | currentLocation = newLocation
                     , tileMap = updateMatrix newLocation
+                    , currentDirection = newDirection
                     , frame = model.frame + 1
                   }
                 , Cmd.none
@@ -171,8 +208,20 @@ view model =
             model
                 |> .frame
                 |> toString
+
+        direction =
+            model
+                |> .currentDirection
+                |> toString
+
+        location =
+            model
+                |> .currentLocation
+                |> toString
     in
-        div []
+        div [ style [ ( "padding", "20px" ) ] ]
             [ div [] tiles
             , div [] [ text ("frame " ++ frame) ]
+            , div [] [ text ("direction " ++ direction) ]
+            , div [] [ text ("location " ++ location) ]
             ]
