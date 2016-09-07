@@ -193,19 +193,13 @@ view model =
                 |> List.map (\tileRow -> viewTilesRow tileRow)
 
         frame =
-            model
-                |> .frame
-                |> toString
+            toString model.frame
 
         direction =
-            model
-                |> .currentDirection
-                |> toString
+            toString model.currentDirection
 
         location =
-            model
-                |> .currentLocation
-                |> toString
+            toString model.currentLocation
     in
         div [ style [ ( "padding", "20px" ) ] ]
             [ div [] tiles
