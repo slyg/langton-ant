@@ -65,18 +65,6 @@ updateMatrix location =
             initialMatrix
 
 
-initMatrix : TileMap
-initMatrix =
-    let
-        initialMatrix =
-            matrix 10 10 (\location -> initTile)
-    in
-        Matrix.update
-            ( 4, 4 )
-            (\tile -> { tile | current = True })
-            initialMatrix
-
-
 initLocation : Matrix.Location
 initLocation =
     ( 4, 4 )
