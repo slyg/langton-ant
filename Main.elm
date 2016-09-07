@@ -21,6 +21,13 @@ type Color
     | Black
 
 
+type Direction
+    = Top
+    | Left
+    | Bottom
+    | Right
+
+
 type alias Tile =
     { color : Color
     , current : Bool
@@ -34,6 +41,8 @@ type alias TileMap =
 type alias Model =
     { time : Time
     , tileMap : TileMap
+    , currentLocation : Matrix.Location
+    , currentDirection : Direction
     }
 
 
@@ -48,6 +57,8 @@ init : ( Model, Cmd Msg )
 init =
     ( { time = 0
       , tileMap = matrix 10 10 (\location -> initTile)
+      , currentLocation = ( 4, 4 )
+      , currentDirection = Top
       }
     , Cmd.none
     )
