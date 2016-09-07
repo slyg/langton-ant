@@ -4,6 +4,7 @@ import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Html.App as App
 import Time exposing (Time, millisecond)
+import AnimationFrame
 import Matrix exposing (Matrix, matrix)
 
 
@@ -199,7 +200,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every millisecond Tick
+    AnimationFrame.diffs Tick
 
 
 viewTile : Tile -> Html Msg
@@ -211,7 +212,7 @@ viewTile tile =
             else
                 case tile.color of
                     White ->
-                        ( "backgroundColor", "white" )
+                        ( "backgroundColor", "whitesmoke" )
 
                     Black ->
                         ( "backgroundColor", "black" )
@@ -221,7 +222,7 @@ viewTile tile =
                 :: [ ( "width", "5px" )
                    , ( "height", "5px" )
                    , ( "padding", "0" )
-                   , ( "margin", "0" )
+                   , ( "margin", "1px" )
                    , ( "display", "inline-block" )
                    ]
     in
@@ -245,18 +246,22 @@ view model =
         frame =
             toString model.frame
 
-        direction =
-            toString model.currentDirection
-
-        location =
-            toString model.currentLocation
-
         layoutStyle =
             [ ( "padding", "20px" ) ]
+
+        tilesMapStyle =
+            [ ( "width", "700px" )
+            , ( "margin", "0 auto" )
+            ]
+
+        textStyle =
+            [ ( "fontFamily", "Arial" )
+            , ( "fontSize", "80%" )
+            , ( "padding", "10px 0" )
+            , ( "textAlign", "center" )
+            ]
     in
         div [ style layoutStyle ]
-            [ div [] tiles
-            , div [] [ text ("frame " ++ frame) ]
-            , div [] [ text ("direction " ++ direction) ]
-            , div [] [ text ("location " ++ location) ]
+            [ div [ style tilesMapStyle ] tiles
+            , div [ style textStyle ] [ text ("frame " ++ frame) ]
             ]
