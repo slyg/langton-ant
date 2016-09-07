@@ -207,25 +207,25 @@ viewTile tile =
     let
         emphaseStyle =
             if tile.current == True then
-                ( "borderRadius", "10px 10px" )
+                ( "backgroundColor", "red" )
             else
-                ( "borderRadius", "0px 0px" )
+                case tile.color of
+                    White ->
+                        ( "backgroundColor", "white" )
 
-        commonStyle =
+                    Black ->
+                        ( "backgroundColor", "black" )
+
+        tileStyle =
             emphaseStyle
-                :: [ ( "width", "10px" )
-                   , ( "height", "10px" )
+                :: [ ( "width", "5px" )
+                   , ( "height", "5px" )
                    , ( "padding", "0" )
-                   , ( "margin", "1px" )
+                   , ( "margin", "0" )
                    , ( "display", "inline-block" )
                    ]
     in
-        case tile.color of
-            White ->
-                div [ style (( "backgroundColor", "lightgrey" ) :: commonStyle) ] []
-
-            Black ->
-                div [ style (( "backgroundColor", "black" ) :: commonStyle) ] []
+        div [ style tileStyle ] []
 
 
 viewTilesRow : List Tile -> Html Msg
@@ -250,8 +250,11 @@ view model =
 
         location =
             toString model.currentLocation
+
+        layoutStyle =
+            [ ( "padding", "20px" ) ]
     in
-        div [ style [ ( "padding", "20px" ) ] ]
+        div [ style layoutStyle ]
             [ div [] tiles
             , div [] [ text ("frame " ++ frame) ]
             , div [] [ text ("direction " ++ direction) ]
