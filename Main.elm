@@ -53,6 +53,18 @@ initTile =
     }
 
 
+updateMatrix : Matrix.Location -> TileMap
+updateMatrix location =
+    let
+        initialMatrix =
+            matrix 10 10 (\location -> initTile)
+    in
+        Matrix.update
+            location
+            (\tile -> { tile | current = True })
+            initialMatrix
+
+
 initMatrix : TileMap
 initMatrix =
     let
@@ -65,11 +77,16 @@ initMatrix =
             initialMatrix
 
 
+initLocation : Matrix.Location
+initLocation =
+    ( 4, 4 )
+
+
 init : ( Model, Cmd Msg )
 init =
     ( { frame = 0
-      , tileMap = initMatrix
-      , currentLocation = ( 4, 4 )
+      , tileMap = updateMatrix initLocation
+      , currentLocation = initLocation
       , currentDirection = Top
       }
     , Cmd.none
@@ -84,7 +101,25 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick _ ->
-            ( { model | frame = model.frame + 1 }, Cmd.none )
+            let
+                newXLocation =
+                    (Matrix.row model.currentLocation) + 1
+
+                newYLocation =
+                    (Matrix.col model.currentLocation) + 1
+
+                newLocation =
+                    ( newXLocation
+                    , newYLocation
+                    )
+            in
+                ( { model
+                    | currentLocation = newLocation
+                    , tileMap = updateMatrix newLocation
+                    , frame = model.frame + 1
+                  }
+                , Cmd.none
+                )
 
 
 subscriptions : Model -> Sub Msg
@@ -96,7 +131,7 @@ viewTile : Tile -> Html Msg
 viewTile tile =
     let
         emphaseStyle =
-            if tile.current then
+            if tile.current == True then
                 ( "borderRadius", "30px 30px" )
             else
                 ( "borderRadius", "0px 0px" )
