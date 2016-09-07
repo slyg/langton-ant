@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, text)
+import Html exposing (Html, div, text)
 import Html.App as App
 import Time exposing (Time, second)
 import Matrix exposing (Matrix, matrix)
@@ -59,9 +59,23 @@ subscriptions model =
     Time.every second Tick
 
 
+viewTile : Tile -> Html Msg
+viewTile tile =
+    case tile.color of
+        White ->
+            div [] [ text "w" ]
+
+        Black ->
+            div [] [ text "b" ]
+
+
 view : Model -> Html Msg
 view model =
-    model
-        |> .time
-        |> toString
-        |> text
+    let
+        tiles =
+            model
+                |> .tileMap
+                |> Matrix.flatten
+                |> List.map (\tile -> viewTile tile)
+    in
+        div [] tiles
