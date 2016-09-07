@@ -53,16 +53,16 @@ initTile =
     }
 
 
-updateMatrix : Matrix.Location -> TileMap
-updateMatrix location =
-    let
-        initialMatrix =
-            matrix 10 10 (\location -> initTile)
-    in
-        Matrix.update
-            location
-            (\tile -> { tile | current = True })
-            initialMatrix
+initMatrix : TileMap
+initMatrix =
+    matrix 10 10 (\location -> initTile)
+
+
+updateMatrix : TileMap -> Matrix.Location -> Color -> TileMap
+updateMatrix matrix location color =
+    matrix
+        |> Matrix.map (\tile -> { tile | current = False })
+        |> Matrix.update location (\tile -> { tile | current = True, color = color })
 
 
 initLocation : Matrix.Location
@@ -73,7 +73,7 @@ initLocation =
 init : ( Model, Cmd Msg )
 init =
     ( { frame = 0
-      , tileMap = updateMatrix initLocation
+      , tileMap = initMatrix
       , currentLocation = initLocation
       , currentDirection = Top
       }
@@ -136,10 +136,27 @@ update msg model =
 
                         Left ->
                             Top
+
+                newColor =
+                    let
+                        currentColor =
+                            Matrix.get newLocation model.tileMap
+                    in
+                        case currentColor of
+                            Just tile ->
+                                case tile.color of
+                                    Black ->
+                                        White
+
+                                    White ->
+                                        Black
+
+                            Nothing ->
+                                White
             in
                 ( { model
                     | currentLocation = newLocation
-                    , tileMap = updateMatrix newLocation
+                    , tileMap = updateMatrix model.tileMap newLocation newColor
                     , currentDirection = newDirection
                     , frame = model.frame + 1
                   }
