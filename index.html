@@ -4286,7 +4286,7 @@ function endsWith(sub, str)
 function indexes(sub, str)
 {
 	var subLen = sub.length;
-	
+
 	if (subLen < 1)
 	{
 		return _elm_lang$core$Native_List.Nil;
@@ -4299,8 +4299,8 @@ function indexes(sub, str)
 	{
 		is.push(i);
 		i = i + subLen;
-	}	
-	
+	}
+
 	return _elm_lang$core$Native_List.fromArray(is);
 }
 
@@ -8519,6 +8519,106 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 				A2(_elm_lang$core$List$filter, _elm_lang$core$Basics$snd, list))));
 };
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
+var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode_ops[':='], 'keyCode', _elm_lang$core$Json_Decode$int);
+var _elm_lang$html$Html_Events$targetChecked = A2(
+	_elm_lang$core$Json_Decode$at,
+	_elm_lang$core$Native_List.fromArray(
+		['target', 'checked']),
+	_elm_lang$core$Json_Decode$bool);
+var _elm_lang$html$Html_Events$targetValue = A2(
+	_elm_lang$core$Json_Decode$at,
+	_elm_lang$core$Native_List.fromArray(
+		['target', 'value']),
+	_elm_lang$core$Json_Decode$string);
+var _elm_lang$html$Html_Events$defaultOptions = _elm_lang$virtual_dom$VirtualDom$defaultOptions;
+var _elm_lang$html$Html_Events$onWithOptions = _elm_lang$virtual_dom$VirtualDom$onWithOptions;
+var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
+var _elm_lang$html$Html_Events$onFocus = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'focus',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onBlur = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'blur',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onSubmitOptions = _elm_lang$core$Native_Utils.update(
+	_elm_lang$html$Html_Events$defaultOptions,
+	{preventDefault: true});
+var _elm_lang$html$Html_Events$onSubmit = function (msg) {
+	return A3(
+		_elm_lang$html$Html_Events$onWithOptions,
+		'submit',
+		_elm_lang$html$Html_Events$onSubmitOptions,
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onCheck = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'change',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetChecked));
+};
+var _elm_lang$html$Html_Events$onInput = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'input',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+};
+var _elm_lang$html$Html_Events$onMouseOut = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseout',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseOver = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseover',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseLeave = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseleave',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseEnter = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseenter',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseUp = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseup',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseDown = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mousedown',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onDoubleClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'dblclick',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'click',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$Options = F2(
+	function (a, b) {
+		return {stopPropagation: a, preventDefault: b};
+	});
 var _slyg$langton_ant$Main$viewTile = function (tile) {
 	var emphaseStyle = function () {
 		if (_elm_lang$core$Native_Utils.eq(tile.current, true)) {
@@ -8570,7 +8670,165 @@ var _slyg$langton_ant$Main$viewTilesRow = function (tilesRow) {
 			},
 			tilesRow));
 };
+var _slyg$langton_ant$Main$updateMatrix = F3(
+	function (matrix, location, color) {
+		return A3(
+			_chendrix$elm_matrix$Matrix$update,
+			location,
+			function (tile) {
+				return _elm_lang$core$Native_Utils.update(
+					tile,
+					{current: true, color: color});
+			},
+			A2(
+				_chendrix$elm_matrix$Matrix$map,
+				function (tile) {
+					return _elm_lang$core$Native_Utils.update(
+						tile,
+						{current: false});
+				},
+				matrix));
+	});
+var _slyg$langton_ant$Main$initLocation = {ctor: '_Tuple2', _0: 49, _1: 49};
+var _slyg$langton_ant$Main$Tile = F2(
+	function (a, b) {
+		return {color: a, current: b};
+	});
+var _slyg$langton_ant$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {frame: a, tileMap: b, currentLocation: c, currentDirection: d, isRunning: e};
+	});
+var _slyg$langton_ant$Main$Black = {ctor: 'Black'};
+var _slyg$langton_ant$Main$White = {ctor: 'White'};
+var _slyg$langton_ant$Main$initTile = {color: _slyg$langton_ant$Main$White, current: false};
+var _slyg$langton_ant$Main$initMatrix = A3(
+	_chendrix$elm_matrix$Matrix$matrix,
+	100,
+	100,
+	function (location) {
+		return _slyg$langton_ant$Main$initTile;
+	});
+var _slyg$langton_ant$Main$Right = {ctor: 'Right'};
+var _slyg$langton_ant$Main$Bottom = {ctor: 'Bottom'};
+var _slyg$langton_ant$Main$Left = {ctor: 'Left'};
+var _slyg$langton_ant$Main$Top = {ctor: 'Top'};
+var _slyg$langton_ant$Main$init = {
+	ctor: '_Tuple2',
+	_0: {frame: 0, tileMap: _slyg$langton_ant$Main$initMatrix, currentLocation: _slyg$langton_ant$Main$initLocation, currentDirection: _slyg$langton_ant$Main$Top, isRunning: true},
+	_1: _elm_lang$core$Platform_Cmd$none
+};
+var _slyg$langton_ant$Main$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
+		if (_p1.ctor === 'Pause') {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						isRunning: model.isRunning ? false : true
+					}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		} else {
+			var currentColor = function () {
+				var currentColor = A2(_chendrix$elm_matrix$Matrix$get, model.currentLocation, model.tileMap);
+				var _p2 = currentColor;
+				if (_p2.ctor === 'Just') {
+					var _p3 = _p2._0.color;
+					if (_p3.ctor === 'Black') {
+						return _slyg$langton_ant$Main$White;
+					} else {
+						return _slyg$langton_ant$Main$Black;
+					}
+				} else {
+					return _slyg$langton_ant$Main$White;
+				}
+			}();
+			var currentYLocation = _chendrix$elm_matrix$Matrix$col(model.currentLocation);
+			var newYLocation = function () {
+				var _p4 = model.currentDirection;
+				switch (_p4.ctor) {
+					case 'Top':
+						return currentYLocation + 1;
+					case 'Bottom':
+						return currentYLocation - 1;
+					default:
+						return currentYLocation;
+				}
+			}();
+			var currentXLocation = _chendrix$elm_matrix$Matrix$row(model.currentLocation);
+			var newXLocation = function () {
+				var _p5 = model.currentDirection;
+				switch (_p5.ctor) {
+					case 'Right':
+						return currentXLocation + 1;
+					case 'Left':
+						return currentXLocation - 1;
+					default:
+						return currentXLocation;
+				}
+			}();
+			var newLocation = {ctor: '_Tuple2', _0: newXLocation, _1: newYLocation};
+			var newColor = function () {
+				var currentColor = A2(_chendrix$elm_matrix$Matrix$get, newLocation, model.tileMap);
+				var _p6 = currentColor;
+				if (_p6.ctor === 'Just') {
+					var _p7 = _p6._0.color;
+					if (_p7.ctor === 'Black') {
+						return _slyg$langton_ant$Main$White;
+					} else {
+						return _slyg$langton_ant$Main$Black;
+					}
+				} else {
+					return _slyg$langton_ant$Main$White;
+				}
+			}();
+			var newDirection = function () {
+				var _p8 = newColor;
+				if (_p8.ctor === 'White') {
+					var _p9 = model.currentDirection;
+					switch (_p9.ctor) {
+						case 'Top':
+							return _slyg$langton_ant$Main$Right;
+						case 'Right':
+							return _slyg$langton_ant$Main$Bottom;
+						case 'Bottom':
+							return _slyg$langton_ant$Main$Left;
+						default:
+							return _slyg$langton_ant$Main$Top;
+					}
+				} else {
+					var _p10 = model.currentDirection;
+					switch (_p10.ctor) {
+						case 'Top':
+							return _slyg$langton_ant$Main$Left;
+						case 'Left':
+							return _slyg$langton_ant$Main$Bottom;
+						case 'Bottom':
+							return _slyg$langton_ant$Main$Right;
+						default:
+							return _slyg$langton_ant$Main$Top;
+					}
+				}
+			}();
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						currentLocation: newLocation,
+						tileMap: A3(_slyg$langton_ant$Main$updateMatrix, model.tileMap, newLocation, newColor),
+						currentDirection: newDirection,
+						frame: model.frame + 1
+					}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		}
+	});
+var _slyg$langton_ant$Main$Pause = {ctor: 'Pause'};
 var _slyg$langton_ant$Main$view = function (model) {
+	var playPauseText = model.isRunning ? 'Pause' : 'Play';
 	var textStyle = _elm_lang$core$Native_List.fromArray(
 		[
 			{ctor: '_Tuple2', _0: 'fontFamily', _1: 'Arial'},
@@ -8621,159 +8879,28 @@ var _slyg$langton_ant$Main$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html$text(
-						A2(_elm_lang$core$Basics_ops['++'], 'frame ', frame))
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'frame ',
+							A2(_elm_lang$core$Basics_ops['++'], frame, '  '))),
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Events$onClick(_slyg$langton_ant$Main$Pause)
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text(playPauseText)
+							]))
 					]))
 			]));
 };
-var _slyg$langton_ant$Main$initLocation = {ctor: '_Tuple2', _0: 49, _1: 49};
-var _slyg$langton_ant$Main$updateMatrix = F3(
-	function (matrix, location, color) {
-		return A3(
-			_chendrix$elm_matrix$Matrix$update,
-			location,
-			function (tile) {
-				return _elm_lang$core$Native_Utils.update(
-					tile,
-					{current: true, color: color});
-			},
-			A2(
-				_chendrix$elm_matrix$Matrix$map,
-				function (tile) {
-					return _elm_lang$core$Native_Utils.update(
-						tile,
-						{current: false});
-				},
-				matrix));
-	});
-var _slyg$langton_ant$Main$Tile = F2(
-	function (a, b) {
-		return {color: a, current: b};
-	});
-var _slyg$langton_ant$Main$Model = F4(
-	function (a, b, c, d) {
-		return {frame: a, tileMap: b, currentLocation: c, currentDirection: d};
-	});
-var _slyg$langton_ant$Main$Black = {ctor: 'Black'};
-var _slyg$langton_ant$Main$White = {ctor: 'White'};
-var _slyg$langton_ant$Main$initTile = {color: _slyg$langton_ant$Main$White, current: false};
-var _slyg$langton_ant$Main$initMatrix = A3(
-	_chendrix$elm_matrix$Matrix$matrix,
-	100,
-	100,
-	function (location) {
-		return _slyg$langton_ant$Main$initTile;
-	});
-var _slyg$langton_ant$Main$Right = {ctor: 'Right'};
-var _slyg$langton_ant$Main$Bottom = {ctor: 'Bottom'};
-var _slyg$langton_ant$Main$Left = {ctor: 'Left'};
-var _slyg$langton_ant$Main$Top = {ctor: 'Top'};
-var _slyg$langton_ant$Main$init = {
-	ctor: '_Tuple2',
-	_0: {frame: 0, tileMap: _slyg$langton_ant$Main$initMatrix, currentLocation: _slyg$langton_ant$Main$initLocation, currentDirection: _slyg$langton_ant$Main$Top},
-	_1: _elm_lang$core$Platform_Cmd$none
-};
-var _slyg$langton_ant$Main$update = F2(
-	function (msg, model) {
-		var _p1 = msg;
-		var currentColor = function () {
-			var currentColor = A2(_chendrix$elm_matrix$Matrix$get, model.currentLocation, model.tileMap);
-			var _p2 = currentColor;
-			if (_p2.ctor === 'Just') {
-				var _p3 = _p2._0.color;
-				if (_p3.ctor === 'Black') {
-					return _slyg$langton_ant$Main$White;
-				} else {
-					return _slyg$langton_ant$Main$Black;
-				}
-			} else {
-				return _slyg$langton_ant$Main$White;
-			}
-		}();
-		var currentYLocation = _chendrix$elm_matrix$Matrix$col(model.currentLocation);
-		var newYLocation = function () {
-			var _p4 = model.currentDirection;
-			switch (_p4.ctor) {
-				case 'Top':
-					return currentYLocation + 1;
-				case 'Bottom':
-					return currentYLocation - 1;
-				default:
-					return currentYLocation;
-			}
-		}();
-		var currentXLocation = _chendrix$elm_matrix$Matrix$row(model.currentLocation);
-		var newXLocation = function () {
-			var _p5 = model.currentDirection;
-			switch (_p5.ctor) {
-				case 'Right':
-					return currentXLocation + 1;
-				case 'Left':
-					return currentXLocation - 1;
-				default:
-					return currentXLocation;
-			}
-		}();
-		var newLocation = {ctor: '_Tuple2', _0: newXLocation, _1: newYLocation};
-		var newColor = function () {
-			var currentColor = A2(_chendrix$elm_matrix$Matrix$get, newLocation, model.tileMap);
-			var _p6 = currentColor;
-			if (_p6.ctor === 'Just') {
-				var _p7 = _p6._0.color;
-				if (_p7.ctor === 'Black') {
-					return _slyg$langton_ant$Main$White;
-				} else {
-					return _slyg$langton_ant$Main$Black;
-				}
-			} else {
-				return _slyg$langton_ant$Main$White;
-			}
-		}();
-		var newDirection = function () {
-			var _p8 = newColor;
-			if (_p8.ctor === 'White') {
-				var _p9 = model.currentDirection;
-				switch (_p9.ctor) {
-					case 'Top':
-						return _slyg$langton_ant$Main$Right;
-					case 'Right':
-						return _slyg$langton_ant$Main$Bottom;
-					case 'Bottom':
-						return _slyg$langton_ant$Main$Left;
-					default:
-						return _slyg$langton_ant$Main$Top;
-				}
-			} else {
-				var _p10 = model.currentDirection;
-				switch (_p10.ctor) {
-					case 'Top':
-						return _slyg$langton_ant$Main$Left;
-					case 'Left':
-						return _slyg$langton_ant$Main$Bottom;
-					case 'Bottom':
-						return _slyg$langton_ant$Main$Right;
-					default:
-						return _slyg$langton_ant$Main$Top;
-				}
-			}
-		}();
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.update(
-				model,
-				{
-					currentLocation: newLocation,
-					tileMap: A3(_slyg$langton_ant$Main$updateMatrix, model.tileMap, newLocation, newColor),
-					currentDirection: newDirection,
-					frame: model.frame + 1
-				}),
-			_1: _elm_lang$core$Platform_Cmd$none
-		};
-	});
 var _slyg$langton_ant$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
 var _slyg$langton_ant$Main$subscriptions = function (model) {
-	return _elm_lang$animation_frame$AnimationFrame$diffs(_slyg$langton_ant$Main$Tick);
+	return model.isRunning ? _elm_lang$animation_frame$AnimationFrame$diffs(_slyg$langton_ant$Main$Tick) : _elm_lang$core$Platform_Sub$none;
 };
 var _slyg$langton_ant$Main$main = {
 	main: _elm_lang$html$Html_App$program(
