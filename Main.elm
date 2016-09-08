@@ -276,7 +276,11 @@ viewTile tile =
 
 viewTilesRow : List Tile -> Html Msg
 viewTilesRow tilesRow =
-    div [ style [ ( "lineHeight", "0" ) ] ] (List.map (\tile -> viewTile tile) tilesRow)
+    let
+        lazyViewTile =
+            lazy viewTile
+    in
+        div [ style [ ( "lineHeight", "0" ) ] ] (List.map lazyViewTile tilesRow)
 
 
 viewPausePlayButton : Bool -> Html Msg
