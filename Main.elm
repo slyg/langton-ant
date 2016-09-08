@@ -35,11 +35,12 @@ type alias TileMap =
 
 
 type alias Model =
-    { frame : Int
-    , tileMap : TileMap
-    , currentLocation : Matrix.Location
+    { currentLocation : Matrix.Location
     , currentDirection : Direction
+    , frame : Int
+    , hasReachedEdges : Bool
     , isRunning : Bool
+    , tileMap : TileMap
     }
 
 
@@ -61,21 +62,22 @@ initTile =
 
 initMatrix : TileMap
 initMatrix =
-    matrix 70 60 (\location -> initTile)
+    Matrix.square 70 (\location -> initTile)
 
 
 initLocation : Matrix.Location
 initLocation =
-    ( 36, 29 )
+    ( 36, 36 )
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { frame = 0
-      , tileMap = initMatrix
-      , currentLocation = initLocation
+    ( { currentLocation = initLocation
       , currentDirection = Top
+      , frame = 0
+      , hasReachedEdges = False
       , isRunning = True
+      , tileMap = initMatrix
       }
     , Cmd.none
     )
@@ -204,20 +206,39 @@ update msg model =
 
                                 Right ->
                                     Top
+
+                hasReachedEdges =
+                    if newXLocation >= (Matrix.rowCount model.tileMap) then
+                        True
+                    else if newXLocation < 1 then
+                        True
+                    else if newYLocation >= (Matrix.colCount model.tileMap) then
+                        True
+                    else if newYLocation < 1 then
+                        True
+                    else
+                        False
             in
                 ( { model
-                    | currentLocation = newLocation
-                    , tileMap = updateMatrix model.tileMap newLocation newColor
-                    , currentDirection = newDirection
+                    | currentDirection = newDirection
+                    , currentLocation = newLocation
                     , frame = model.frame + 1
+                    , hasReachedEdges = hasReachedEdges
+                    , tileMap = updateMatrix model.tileMap newLocation newColor
                   }
                 , Cmd.none
                 )
 
 
+
+-- Subscriptions
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.isRunning then
+    if model.hasReachedEdges then
+        Sub.none
+    else if model.isRunning then
         AnimationFrame.diffs Tick
     else
         Sub.none
@@ -246,7 +267,7 @@ viewTile tile =
                 :: [ ( "width", "5px" )
                    , ( "height", "5px" )
                    , ( "padding", "0" )
-                   , ( "margin", "1px" )
+                   , ( "margin", "1px 0 0 1px" )
                    , ( "display", "inline-block" )
                    ]
     in
@@ -274,7 +295,7 @@ view model =
             [ ( "padding", "20px" ) ]
 
         tilesMapWidth =
-            (Matrix.rowCount model.tileMap) * 6
+            (Matrix.colCount model.tileMap) * 6
 
         tilesMapStyle =
             [ ( "width", (toString tilesMapWidth) ++ "px" )
