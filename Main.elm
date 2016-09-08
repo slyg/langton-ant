@@ -113,6 +113,38 @@ updateMatrix location color tilesMatrix =
         |> Matrix.update location (\tile -> { tile | current = True, color = color })
 
 
+turnLeft : Direction -> Direction
+turnLeft direction =
+    case direction of
+        Top ->
+            Left
+
+        Left ->
+            Bottom
+
+        Bottom ->
+            Right
+
+        Right ->
+            Top
+
+
+turnRight : Direction -> Direction
+turnRight direction =
+    case direction of
+        Top ->
+            Right
+
+        Right ->
+            Bottom
+
+        Bottom ->
+            Left
+
+        Left ->
+            Top
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -130,11 +162,8 @@ update msg model =
 
         Tick _ ->
             let
-                currentXLocation =
-                    Matrix.row model.currentLocation
-
-                currentYLocation =
-                    Matrix.col model.currentLocation
+                ( currentXLocation, currentYLocation ) =
+                    model.currentLocation
 
                 currentColor =
                     getTileColor model.currentLocation model.tilesMatrix
@@ -172,32 +201,10 @@ update msg model =
                 newDirection =
                     case newColor of
                         White ->
-                            case model.currentDirection of
-                                Top ->
-                                    Right
-
-                                Right ->
-                                    Bottom
-
-                                Bottom ->
-                                    Left
-
-                                Left ->
-                                    Top
+                            turnRight model.currentDirection
 
                         Black ->
-                            case model.currentDirection of
-                                Top ->
-                                    Left
-
-                                Left ->
-                                    Bottom
-
-                                Bottom ->
-                                    Right
-
-                                Right ->
-                                    Top
+                            turnLeft model.currentDirection
 
                 hasReachedEdges =
                     if newXLocation >= (Matrix.rowCount model.tilesMatrix) then
