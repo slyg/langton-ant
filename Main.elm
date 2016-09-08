@@ -1,7 +1,8 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, button, text)
 import Html.Attributes exposing (style)
+import Html.Events exposing (onClick)
 import Html.App as App
 import Time exposing (Time)
 import AnimationFrame
@@ -38,11 +39,13 @@ type alias Model =
     , tileMap : TileMap
     , currentLocation : Matrix.Location
     , currentDirection : Direction
+    , isRunning : Bool
     }
 
 
 type Msg
     = Tick Time
+    | Pause
 
 
 
@@ -72,6 +75,7 @@ init =
       , tileMap = initMatrix
       , currentLocation = initLocation
       , currentDirection = Top
+      , isRunning = True
       }
     , Cmd.none
     )
@@ -91,6 +95,17 @@ updateMatrix matrix location color =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Pause ->
+            ( { model
+                | isRunning =
+                    if model.isRunning then
+                        False
+                    else
+                        True
+              }
+            , Cmd.none
+            )
+
         Tick _ ->
             let
                 currentXLocation =
@@ -202,7 +217,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    AnimationFrame.diffs Tick
+    if model.isRunning then
+        AnimationFrame.diffs Tick
+    else
+        Sub.none
 
 
 
@@ -266,10 +284,19 @@ view model =
             , ( "padding", "10px 0" )
             , ( "textAlign", "center" )
             ]
+
+        playPauseText =
+            if model.isRunning then
+                "Pause"
+            else
+                "Play"
     in
         div [ style layoutStyle ]
             [ div [ style tilesMapStyle ] tiles
-            , div [ style textStyle ] [ text ("frame " ++ frame) ]
+            , div [ style textStyle ]
+                [ text ("frame " ++ frame ++ "  ")
+                , button [ onClick Pause ] [ text playPauseText ]
+                ]
             ]
 
 
