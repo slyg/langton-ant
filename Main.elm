@@ -40,7 +40,7 @@ type alias Model =
     , frame : Int
     , hasReachedEdges : Bool
     , isRunning : Bool
-    , tileMap : TileMap
+    , tilesMap : TileMap
     }
 
 
@@ -77,7 +77,7 @@ init =
       , frame = 0
       , hasReachedEdges = False
       , isRunning = True
-      , tileMap = initMatrix
+      , tilesMap = initMatrix
       }
     , Cmd.none
     )
@@ -98,15 +98,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Pause ->
-            ( { model
-                | isRunning =
+            let
+                isRunning =
                     if model.isRunning then
                         False
                     else
                         True
-              }
-            , Cmd.none
-            )
+            in
+                ( { model | isRunning = isRunning }
+                , Cmd.none
+                )
 
         Tick _ ->
             let
@@ -119,7 +120,7 @@ update msg model =
                 currentColor =
                     let
                         currentColor =
-                            Matrix.get model.currentLocation model.tileMap
+                            Matrix.get model.currentLocation model.tilesMap
                     in
                         case currentColor of
                             Just tile ->
@@ -163,7 +164,7 @@ update msg model =
                 newColor =
                     let
                         currentColor =
-                            Matrix.get newLocation model.tileMap
+                            Matrix.get newLocation model.tilesMap
                     in
                         case currentColor of
                             Just tile ->
@@ -208,11 +209,11 @@ update msg model =
                                     Top
 
                 hasReachedEdges =
-                    if newXLocation >= (Matrix.rowCount model.tileMap) then
+                    if newXLocation >= (Matrix.rowCount model.tilesMap) then
                         True
                     else if newXLocation < 1 then
                         True
-                    else if newYLocation >= (Matrix.colCount model.tileMap) then
+                    else if newYLocation >= (Matrix.colCount model.tilesMap) then
                         True
                     else if newYLocation < 1 then
                         True
@@ -224,7 +225,7 @@ update msg model =
                     , currentLocation = newLocation
                     , frame = model.frame + 1
                     , hasReachedEdges = hasReachedEdges
-                    , tileMap = updateMatrix model.tileMap newLocation newColor
+                    , tilesMap = updateMatrix model.tilesMap newLocation newColor
                   }
                 , Cmd.none
                 )
@@ -284,7 +285,7 @@ view model =
     let
         tiles =
             model
-                |> .tileMap
+                |> .tilesMap
                 |> Matrix.toList
                 |> List.map (\tileRow -> viewTilesRow tileRow)
 
@@ -295,7 +296,7 @@ view model =
             [ ( "padding", "20px" ) ]
 
         tilesMapWidth =
-            (Matrix.colCount model.tileMap) * 6
+            (Matrix.colCount model.tilesMap) * 6
 
         tilesMapStyle =
             [ ( "width", (toString tilesMapWidth) ++ "px" )
