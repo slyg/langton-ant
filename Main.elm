@@ -61,12 +61,12 @@ initTile =
 
 initMatrix : TileMap
 initMatrix =
-    matrix 100 100 (\location -> initTile)
+    matrix 70 60 (\location -> initTile)
 
 
 initLocation : Matrix.Location
 initLocation =
-    ( 49, 49 )
+    ( 36, 29 )
 
 
 init : ( Model, Cmd Msg )
@@ -273,8 +273,11 @@ view model =
         layoutStyle =
             [ ( "padding", "20px" ) ]
 
+        tilesMapWidth =
+            (Matrix.rowCount model.tileMap) * 6
+
         tilesMapStyle =
-            [ ( "width", "700px" )
+            [ ( "width", (toString tilesMapWidth) ++ "px" )
             , ( "margin", "0 auto" )
             ]
 
