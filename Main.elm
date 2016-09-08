@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (Html, div, button, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Html.Lazy exposing (lazy)
 import Html.App as App
 import Time exposing (Time)
 import AnimationFrame
@@ -278,6 +279,18 @@ viewTilesRow tilesRow =
     div [ style [ ( "lineHeight", "0" ) ] ] (List.map (\tile -> viewTile tile) tilesRow)
 
 
+viewPausePlayButton : Bool -> Html Msg
+viewPausePlayButton isRunning =
+    let
+        label =
+            if isRunning then
+                "Pause"
+            else
+                "Play"
+    in
+        button [ onClick Pause ] [ text label ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -307,18 +320,12 @@ view model =
             , ( "padding", "10px 0" )
             , ( "textAlign", "center" )
             ]
-
-        playPauseText =
-            if model.isRunning then
-                "Pause"
-            else
-                "Play"
     in
         div [ style layoutStyle ]
             [ div [ style tilesMatrixStyle ] tiles
             , div [ style textStyle ]
                 [ text ("frame " ++ frame ++ "  ")
-                , button [ onClick Pause ] [ text playPauseText ]
+                , lazy viewPausePlayButton model.isRunning
                 ]
             ]
 
