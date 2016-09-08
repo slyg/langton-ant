@@ -3,18 +3,12 @@ module Main exposing (..)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Html.App as App
-import Time exposing (Time, millisecond)
+import Time exposing (Time)
 import AnimationFrame
 import Matrix exposing (Matrix, matrix)
 
 
-main =
-    App.program
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+-- Types
 
 
 type Color
@@ -47,6 +41,14 @@ type alias Model =
     }
 
 
+type Msg
+    = Tick Time
+
+
+
+-- Inits
+
+
 initTile : Tile
 initTile =
     { color = White
@@ -57,13 +59,6 @@ initTile =
 initMatrix : TileMap
 initMatrix =
     matrix 100 100 (\location -> initTile)
-
-
-updateMatrix : TileMap -> Matrix.Location -> Color -> TileMap
-updateMatrix matrix location color =
-    matrix
-        |> Matrix.map (\tile -> { tile | current = False })
-        |> Matrix.update location (\tile -> { tile | current = True, color = color })
 
 
 initLocation : Matrix.Location
@@ -82,8 +77,15 @@ init =
     )
 
 
-type Msg
-    = Tick Time
+
+-- Updates
+
+
+updateMatrix : TileMap -> Matrix.Location -> Color -> TileMap
+updateMatrix matrix location color =
+    matrix
+        |> Matrix.map (\tile -> { tile | current = False })
+        |> Matrix.update location (\tile -> { tile | current = True, color = color })
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -203,6 +205,10 @@ subscriptions model =
     AnimationFrame.diffs Tick
 
 
+
+-- Views
+
+
 viewTile : Tile -> Html Msg
 viewTile tile =
     let
@@ -265,3 +271,16 @@ view model =
             [ div [ style tilesMapStyle ] tiles
             , div [ style textStyle ] [ text ("frame " ++ frame) ]
             ]
+
+
+
+-- Connect everything
+
+
+main =
+    App.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
