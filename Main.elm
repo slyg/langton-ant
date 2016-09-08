@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Html.App as App
 import Time exposing (Time)
 import AnimationFrame
-import Matrix exposing (Matrix, matrix)
+import Matrix exposing (Matrix)
 
 
 -- Types
@@ -30,7 +30,7 @@ type alias Tile =
     }
 
 
-type alias TileMap =
+type alias TilesMatrix =
     Matrix Tile
 
 
@@ -40,7 +40,7 @@ type alias Model =
     , frame : Int
     , hasReachedEdges : Bool
     , isRunning : Bool
-    , tilesMap : TileMap
+    , tilesMatrix : TilesMatrix
     }
 
 
@@ -60,7 +60,7 @@ initTile =
     }
 
 
-initMatrix : TileMap
+initMatrix : TilesMatrix
 initMatrix =
     Matrix.square 70 (\location -> initTile)
 
@@ -77,7 +77,7 @@ init =
       , frame = 0
       , hasReachedEdges = False
       , isRunning = True
-      , tilesMap = initMatrix
+      , tilesMatrix = initMatrix
       }
     , Cmd.none
     )
@@ -87,9 +87,28 @@ init =
 -- Updates
 
 
-updateMatrix : TileMap -> Matrix.Location -> Color -> TileMap
-updateMatrix matrix location color =
-    matrix
+getTileColor : Matrix.Location -> TilesMatrix -> Color
+getTileColor location tilesMatrix =
+    let
+        c =
+            Matrix.get location tilesMatrix
+    in
+        case c of
+            Just tile ->
+                case tile.color of
+                    Black ->
+                        White
+
+                    White ->
+                        Black
+
+            Nothing ->
+                White
+
+
+updateMatrix : Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
+updateMatrix location color tilesMatrix =
+    tilesMatrix
         |> Matrix.map (\tile -> { tile | current = False })
         |> Matrix.update location (\tile -> { tile | current = True, color = color })
 
@@ -118,21 +137,7 @@ update msg model =
                     Matrix.col model.currentLocation
 
                 currentColor =
-                    let
-                        currentColor =
-                            Matrix.get model.currentLocation model.tilesMap
-                    in
-                        case currentColor of
-                            Just tile ->
-                                case tile.color of
-                                    Black ->
-                                        White
-
-                                    White ->
-                                        Black
-
-                            Nothing ->
-                                White
+                    getTileColor model.currentLocation model.tilesMatrix
 
                 newXLocation =
                     case model.currentDirection of
@@ -162,21 +167,7 @@ update msg model =
                     )
 
                 newColor =
-                    let
-                        currentColor =
-                            Matrix.get newLocation model.tilesMap
-                    in
-                        case currentColor of
-                            Just tile ->
-                                case tile.color of
-                                    Black ->
-                                        White
-
-                                    White ->
-                                        Black
-
-                            Nothing ->
-                                White
+                    getTileColor newLocation model.tilesMatrix
 
                 newDirection =
                     case newColor of
@@ -209,11 +200,11 @@ update msg model =
                                     Top
 
                 hasReachedEdges =
-                    if newXLocation >= (Matrix.rowCount model.tilesMap) then
+                    if newXLocation >= (Matrix.rowCount model.tilesMatrix) then
                         True
                     else if newXLocation < 1 then
                         True
-                    else if newYLocation >= (Matrix.colCount model.tilesMap) then
+                    else if newYLocation >= (Matrix.colCount model.tilesMatrix) then
                         True
                     else if newYLocation < 1 then
                         True
@@ -225,7 +216,7 @@ update msg model =
                     , currentLocation = newLocation
                     , frame = model.frame + 1
                     , hasReachedEdges = hasReachedEdges
-                    , tilesMap = updateMatrix model.tilesMap newLocation newColor
+                    , tilesMatrix = updateMatrix newLocation newColor model.tilesMatrix
                   }
                 , Cmd.none
                 )
@@ -285,7 +276,7 @@ view model =
     let
         tiles =
             model
-                |> .tilesMap
+                |> .tilesMatrix
                 |> Matrix.toList
                 |> List.map (\tileRow -> viewTilesRow tileRow)
 
@@ -295,11 +286,11 @@ view model =
         layoutStyle =
             [ ( "padding", "20px" ) ]
 
-        tilesMapWidth =
-            (Matrix.colCount model.tilesMap) * 6
+        tilesMatrixWidth =
+            (Matrix.colCount model.tilesMatrix) * 6
 
-        tilesMapStyle =
-            [ ( "width", (toString tilesMapWidth) ++ "px" )
+        tilesMatrixStyle =
+            [ ( "width", (toString tilesMatrixWidth) ++ "px" )
             , ( "margin", "0 auto" )
             ]
 
@@ -317,7 +308,7 @@ view model =
                 "Play"
     in
         div [ style layoutStyle ]
-            [ div [ style tilesMapStyle ] tiles
+            [ div [ style tilesMatrixStyle ] tiles
             , div [ style textStyle ]
                 [ text ("frame " ++ frame ++ "  ")
                 , button [ onClick Pause ] [ text playPauseText ]
