@@ -72,12 +72,12 @@ initTile =
 
 initMatrix : TilesMatrix
 initMatrix =
-    Matrix.square 70 (\location -> initTile)
+    Matrix.matrix 66 50 (\location -> initTile)
 
 
 initLocation : Matrix.Location
 initLocation =
-    ( 36, 36 )
+    ( 30, 24 )
 
 
 init : ( Model, Cmd Msg )
@@ -199,11 +199,11 @@ hasReachedEdged location tilesMatrix =
             False
 
 
-computeNextTilesMatrix : Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
-computeNextTilesMatrix location color tilesMatrix =
+computeNextTilesMatrix : Matrix.Location -> Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
+computeNextTilesMatrix location nextLocation color tilesMatrix =
     tilesMatrix
-        |> Matrix.map (\tile -> { tile | isCurrent = False })
-        |> Matrix.update location (\tile -> { tile | isCurrent = True, color = color })
+        |> Matrix.update location (\tile -> { tile | isCurrent = False })
+        |> Matrix.update nextLocation (\tile -> { tile | isCurrent = True, color = color })
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -238,7 +238,7 @@ update msg model =
                             turnLeft model.direction
 
                 nextTilesMatrix =
-                    computeNextTilesMatrix nextLocation nextColor model.tilesMatrix
+                    computeNextTilesMatrix model.location nextLocation nextColor model.tilesMatrix
             in
                 ( { model
                     | direction = nextDirection
@@ -260,7 +260,11 @@ subscriptions model =
     if model.hasReachedEdges then
         Sub.none
     else if model.isRunning then
-        AnimationFrame.diffs Tick
+        {-
+           Intensive mode, might affect browser perfs
+           use AnimationFrame.diffs Tick for respectful animations
+        -}
+        Time.every Time.millisecond Tick
     else
         Sub.none
 
