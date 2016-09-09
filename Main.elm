@@ -10,6 +10,15 @@ import AnimationFrame
 import Matrix exposing (Matrix)
 
 
+-- Fancy tuples
+
+
+(~>) : a -> b -> ( a, b )
+(~>) a b =
+    ( a, b )
+
+
+
 -- Types
 
 
@@ -27,7 +36,7 @@ type Direction
 
 type alias Tile =
     { color : Color
-    , current : Bool
+    , isCurrent : Bool
     }
 
 
@@ -36,11 +45,11 @@ type alias TilesMatrix =
 
 
 type alias Model =
-    { currentLocation : Matrix.Location
-    , currentDirection : Direction
+    { direction : Direction
     , frame : Int
     , hasReachedEdges : Bool
     , isRunning : Bool
+    , location : Matrix.Location
     , tilesMatrix : TilesMatrix
     }
 
@@ -57,7 +66,7 @@ type Msg
 initTile : Tile
 initTile =
     { color = White
-    , current = False
+    , isCurrent = False
     }
 
 
@@ -73,11 +82,11 @@ initLocation =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { currentLocation = initLocation
-      , currentDirection = Top
+    ( { direction = Top
       , frame = 0
       , hasReachedEdges = False
       , isRunning = True
+      , location = initLocation
       , tilesMatrix = initMatrix
       }
     , Cmd.none
@@ -105,13 +114,6 @@ getTileColor location tilesMatrix =
 
             Nothing ->
                 White
-
-
-updateMatrix : Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
-updateMatrix location color tilesMatrix =
-    tilesMatrix
-        |> Matrix.map (\tile -> { tile | current = False })
-        |> Matrix.update location (\tile -> { tile | current = True, color = color })
 
 
 turnLeft : Direction -> Direction
@@ -146,6 +148,64 @@ turnRight direction =
             Top
 
 
+getNextLocation : Matrix.Location -> Direction -> Matrix.Location
+getNextLocation location direction =
+    let
+        ( x, y ) =
+            location
+
+        nextX =
+            case direction of
+                Right ->
+                    x + 1
+
+                Left ->
+                    x - 1
+
+                _ ->
+                    x
+
+        nextY =
+            case direction of
+                Top ->
+                    y + 1
+
+                Bottom ->
+                    y - 1
+
+                _ ->
+                    y
+    in
+        ( nextX
+        , nextY
+        )
+
+
+hasReachedEdged : Matrix.Location -> TilesMatrix -> Bool
+hasReachedEdged location tilesMatrix =
+    let
+        ( x, y ) =
+            location
+    in
+        if x >= (Matrix.rowCount tilesMatrix) then
+            True
+        else if x < 1 then
+            True
+        else if y >= (Matrix.colCount tilesMatrix) then
+            True
+        else if y < 1 then
+            True
+        else
+            False
+
+
+computeNextTilesMatrix : Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
+computeNextTilesMatrix location color tilesMatrix =
+    tilesMatrix
+        |> Matrix.map (\tile -> { tile | isCurrent = False })
+        |> Matrix.update location (\tile -> { tile | isCurrent = True, color = color })
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -163,68 +223,29 @@ update msg model =
 
         Tick _ ->
             let
-                ( currentXLocation, currentYLocation ) =
-                    model.currentLocation
+                nextLocation =
+                    getNextLocation model.location model.direction
 
-                currentColor =
-                    getTileColor model.currentLocation model.tilesMatrix
+                nextColor =
+                    getTileColor nextLocation model.tilesMatrix
 
-                newXLocation =
-                    case model.currentDirection of
-                        Right ->
-                            currentXLocation + 1
-
-                        Left ->
-                            currentXLocation - 1
-
-                        _ ->
-                            currentXLocation
-
-                newYLocation =
-                    case model.currentDirection of
-                        Top ->
-                            currentYLocation + 1
-
-                        Bottom ->
-                            currentYLocation - 1
-
-                        _ ->
-                            currentYLocation
-
-                newLocation =
-                    ( newXLocation
-                    , newYLocation
-                    )
-
-                newColor =
-                    getTileColor newLocation model.tilesMatrix
-
-                newDirection =
-                    case newColor of
+                nextDirection =
+                    case nextColor of
                         White ->
-                            turnRight model.currentDirection
+                            turnRight model.direction
 
                         Black ->
-                            turnLeft model.currentDirection
+                            turnLeft model.direction
 
-                hasReachedEdges =
-                    if newXLocation >= (Matrix.rowCount model.tilesMatrix) then
-                        True
-                    else if newXLocation < 1 then
-                        True
-                    else if newYLocation >= (Matrix.colCount model.tilesMatrix) then
-                        True
-                    else if newYLocation < 1 then
-                        True
-                    else
-                        False
+                nextTilesMatrix =
+                    computeNextTilesMatrix nextLocation nextColor model.tilesMatrix
             in
                 ( { model
-                    | currentDirection = newDirection
-                    , currentLocation = newLocation
+                    | direction = nextDirection
                     , frame = model.frame + 1
-                    , hasReachedEdges = hasReachedEdges
-                    , tilesMatrix = updateMatrix newLocation newColor model.tilesMatrix
+                    , hasReachedEdges = hasReachedEdged model.location model.tilesMatrix
+                    , location = nextLocation
+                    , tilesMatrix = nextTilesMatrix
                   }
                 , Cmd.none
                 )
@@ -252,23 +273,23 @@ viewTile : Tile -> Html Msg
 viewTile tile =
     let
         emphaseStyle =
-            if tile.current == True then
-                ( "backgroundColor", "red" )
+            if tile.isCurrent == True then
+                "backgroundColor" ~> "red"
             else
                 case tile.color of
                     White ->
-                        ( "backgroundColor", "whitesmoke" )
+                        ("backgroundColor" ~> "whitesmoke")
 
                     Black ->
-                        ( "backgroundColor", "black" )
+                        ("backgroundColor" ~> "black")
 
         tileStyle =
             emphaseStyle
-                :: [ ( "width", "5px" )
-                   , ( "height", "5px" )
-                   , ( "padding", "0" )
-                   , ( "margin", "1px 0 0 1px" )
-                   , ( "display", "inline-block" )
+                :: [ "width" ~> "5px"
+                   , "height" ~> "5px"
+                   , "padding" ~> "0"
+                   , "margin" ~> "1px 0 0 1px"
+                   , "display" ~> "inline-block"
                    ]
     in
         div [ style tileStyle ] []
@@ -280,7 +301,7 @@ viewTilesRow tilesRow =
         lazyViewTile =
             lazy viewTile
     in
-        div [ style [ ( "lineHeight", "0" ) ] ] (List.map lazyViewTile tilesRow)
+        div [ style [ "lineHeight" ~> "0" ] ] (List.map lazyViewTile tilesRow)
 
 
 viewPausePlayButton : Bool -> Html Msg
@@ -308,21 +329,21 @@ view model =
             toString model.frame
 
         layoutStyle =
-            [ ( "padding", "20px" ) ]
+            [ "padding" ~> "20px" ]
 
         tilesMatrixWidth =
             (Matrix.colCount model.tilesMatrix) * 6
 
         tilesMatrixStyle =
-            [ ( "width", (toString tilesMatrixWidth) ++ "px" )
-            , ( "margin", "0 auto" )
+            [ "width" ~> ((toString tilesMatrixWidth) ++ "px")
+            , "margin" ~> "0 auto"
             ]
 
         textStyle =
-            [ ( "fontFamily", "Arial" )
-            , ( "fontSize", "80%" )
-            , ( "padding", "10px 0" )
-            , ( "textAlign", "center" )
+            [ "fontFamily" ~> "Arial"
+            , "fontSize" ~> "80%"
+            , "padding" ~> "10px 0"
+            , "textAlign" ~> "center"
             ]
     in
         div [ style layoutStyle ]
@@ -335,7 +356,7 @@ view model =
 
 
 
--- Connect everything
+-- Wire everything
 
 
 main =
