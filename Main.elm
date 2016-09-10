@@ -8,6 +8,9 @@ import Html.App as App
 import Time exposing (Time)
 import AnimationFrame
 import Matrix exposing (Matrix)
+import Collage
+import Element
+import Color
 
 
 -- Fancy tuples
@@ -299,6 +302,28 @@ viewTile tile =
         div [ style tileStyle ] []
 
 
+viewTileCanvas : Matrix.Location -> Tile -> Collage.Form
+viewTileCanvas position tile =
+    let
+        ( x, y ) =
+            position
+
+        color =
+            if tile.isCurrent == True then
+                Color.rgb 255 0 0
+            else
+                case tile.color of
+                    White ->
+                        Color.rgb 222 222 222
+
+                    Black ->
+                        Color.rgb 0 0 0
+    in
+        Collage.rect 5 5
+            |> Collage.filled color
+            |> Collage.move ( toFloat ((6 * x) - 159), toFloat ((6 * y) - 147) )
+
+
 viewTilesRow : List Tile -> Html Msg
 viewTilesRow tilesRow =
     let
@@ -324,10 +349,15 @@ view : Model -> Html Msg
 view model =
     let
         tiles =
-            model
-                |> .tilesMatrix
-                |> Matrix.toList
-                |> List.map (\tileRow -> viewTilesRow tileRow)
+            Collage.collage tilesMatrixWidth
+                tilesMatrixWidth
+                (model
+                    |> .tilesMatrix
+                    |> Matrix.mapWithLocation viewTileCanvas
+                    |> Matrix.flatten
+                )
+                |> Element.color (Color.rgb 240 240 240)
+                |> Element.toHtml
 
         frame =
             toString model.frame
@@ -349,9 +379,12 @@ view model =
             , "padding" ~> "10px 0"
             , "textAlign" ~> "center"
             ]
+
+        tilesMatrixView =
+            div [ style tilesMatrixStyle ] [ tiles ]
     in
         div [ style layoutStyle ]
-            [ div [ style tilesMatrixStyle ] tiles
+            [ tilesMatrixView
             , div [ style textStyle ]
                 [ text ("frame " ++ frame ++ "  ")
                 , lazy viewPausePlayButton model.isRunning
