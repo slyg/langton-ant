@@ -42,7 +42,7 @@ type alias Model =
     { direction : Direction
     , fps : Int
     , frame : Int
-    , hasReachedEdges : Bool
+    , isEdgesReached : Bool
     , isRunning : Bool
     , location : Matrix.Location
     , tilesMatrix : TilesMatrix
@@ -72,7 +72,7 @@ init =
     ( { direction = North
       , fps = 0
       , frame = 0
-      , hasReachedEdges = False
+      , isEdgesReached = False
       , isRunning = True
       , location = initLocation
       , tilesMatrix = initMatrix
@@ -88,10 +88,10 @@ init =
 getTileColor : Matrix.Location -> TilesMatrix -> Color
 getTileColor location tilesMatrix =
     let
-        c =
+        tile =
             Matrix.get location tilesMatrix
     in
-        case c of
+        case tile of
             Just color ->
                 case color of
                     Black ->
@@ -169,19 +169,19 @@ getNextLocation location direction =
         )
 
 
-hasReachedEdged : Matrix.Location -> TilesMatrix -> Bool
-hasReachedEdged location tilesMatrix =
+hasReachedEdges : Matrix.Location -> TilesMatrix -> Bool
+hasReachedEdges location tilesMatrix =
     let
         ( x, y ) =
             location
     in
         if x >= (Matrix.rowCount tilesMatrix) then
             True
-        else if x < 1 then
+        else if x < 0 then
             True
         else if y >= (Matrix.colCount tilesMatrix) then
             True
-        else if y < 1 then
+        else if y < 0 then
             True
         else
             False
@@ -218,7 +218,7 @@ update msg model =
                     | direction = nextDirection
                     , fps = round (1000 / dt)
                     , frame = model.frame + 1
-                    , hasReachedEdges = hasReachedEdged model.location model.tilesMatrix
+                    , isEdgesReached = hasReachedEdges nextLocation nextTilesMatrix
                     , location = nextLocation
                     , tilesMatrix = nextTilesMatrix
                   }
@@ -232,7 +232,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.hasReachedEdges then
+    if model.isEdgesReached then
         Sub.none
     else if model.isRunning then
         AnimationFrame.diffs Tick
