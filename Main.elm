@@ -22,30 +22,25 @@ import Matrix exposing (Matrix)
 -- Types
 
 
+type Direction
+    = North
+    | West
+    | South
+    | East
+
+
 type Color
     = White
     | Black
 
 
-type Direction
-    = Top
-    | Left
-    | Bottom
-    | Right
-
-
-type alias Tile =
-    { color : Color
-    , isCurrent : Bool
-    }
-
-
 type alias TilesMatrix =
-    Matrix Tile
+    Matrix Color
 
 
 type alias Model =
     { direction : Direction
+    , fps : Int
     , frame : Int
     , hasReachedEdges : Bool
     , isRunning : Bool
@@ -56,23 +51,15 @@ type alias Model =
 
 type Msg
     = Tick Time
-    | Pause
 
 
 
 -- Inits
 
 
-initTile : Tile
-initTile =
-    { color = White
-    , isCurrent = False
-    }
-
-
 initMatrix : TilesMatrix
 initMatrix =
-    Matrix.matrix 66 50 (\location -> initTile)
+    Matrix.matrix 66 50 (\location -> White)
 
 
 initLocation : Matrix.Location
@@ -82,7 +69,8 @@ initLocation =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { direction = Top
+    ( { direction = North
+      , fps = 0
       , frame = 0
       , hasReachedEdges = False
       , isRunning = True
@@ -104,8 +92,8 @@ getTileColor location tilesMatrix =
             Matrix.get location tilesMatrix
     in
         case c of
-            Just tile ->
-                case tile.color of
+            Just color ->
+                case color of
                     Black ->
                         White
 
@@ -119,33 +107,33 @@ getTileColor location tilesMatrix =
 turnLeft : Direction -> Direction
 turnLeft direction =
     case direction of
-        Top ->
-            Left
+        North ->
+            West
 
-        Left ->
-            Bottom
+        West ->
+            South
 
-        Bottom ->
-            Right
+        South ->
+            East
 
-        Right ->
-            Top
+        East ->
+            North
 
 
 turnRight : Direction -> Direction
 turnRight direction =
     case direction of
-        Top ->
-            Right
+        North ->
+            East
 
-        Right ->
-            Bottom
+        East ->
+            South
 
-        Bottom ->
-            Left
+        South ->
+            West
 
-        Left ->
-            Top
+        West ->
+            North
 
 
 getNextLocation : Matrix.Location -> Direction -> Matrix.Location
@@ -156,10 +144,10 @@ getNextLocation location direction =
 
         nextX =
             case direction of
-                Right ->
+                East ->
                     x + 1
 
-                Left ->
+                West ->
                     x - 1
 
                 _ ->
@@ -167,10 +155,10 @@ getNextLocation location direction =
 
         nextY =
             case direction of
-                Top ->
+                North ->
                     y + 1
 
-                Bottom ->
+                South ->
                     y - 1
 
                 _ ->
@@ -201,27 +189,13 @@ hasReachedEdged location tilesMatrix =
 
 computeNextTilesMatrix : Matrix.Location -> Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
 computeNextTilesMatrix location nextLocation color tilesMatrix =
-    tilesMatrix
-        |> Matrix.update location (\tile -> { tile | isCurrent = False })
-        |> Matrix.update nextLocation (\tile -> { tile | isCurrent = True, color = color })
+    Matrix.set nextLocation color tilesMatrix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Pause ->
-            let
-                isRunning =
-                    if model.isRunning then
-                        False
-                    else
-                        True
-            in
-                ( { model | isRunning = isRunning }
-                , Cmd.none
-                )
-
-        Tick _ ->
+        Tick dt ->
             let
                 nextLocation =
                     getNextLocation model.location model.direction
@@ -242,6 +216,7 @@ update msg model =
             in
                 ( { model
                     | direction = nextDirection
+                    , fps = round (1000 / dt)
                     , frame = model.frame + 1
                     , hasReachedEdges = hasReachedEdged model.location model.tilesMatrix
                     , location = nextLocation
@@ -260,11 +235,7 @@ subscriptions model =
     if model.hasReachedEdges then
         Sub.none
     else if model.isRunning then
-        {-
-           Intensive mode, might affect browser perfs
-           use AnimationFrame.diffs Tick for respectful animations
-        -}
-        Time.every Time.millisecond Tick
+        AnimationFrame.diffs Tick
     else
         Sub.none
 
@@ -273,19 +244,16 @@ subscriptions model =
 -- Views
 
 
-viewTile : Tile -> Html Msg
-viewTile tile =
+viewTile : Color -> Html Msg
+viewTile color =
     let
         emphaseStyle =
-            if tile.isCurrent == True then
-                "backgroundColor" ~> "red"
-            else
-                case tile.color of
-                    White ->
-                        ("backgroundColor" ~> "whitesmoke")
+            case color of
+                White ->
+                    ("backgroundColor" ~> "whitesmoke")
 
-                    Black ->
-                        ("backgroundColor" ~> "black")
+                Black ->
+                    ("backgroundColor" ~> "black")
 
         tileStyle =
             emphaseStyle
@@ -299,25 +267,9 @@ viewTile tile =
         div [ style tileStyle ] []
 
 
-viewTilesRow : List Tile -> Html Msg
+viewTilesRow : List Color -> Html Msg
 viewTilesRow tilesRow =
-    let
-        lazyViewTile =
-            lazy viewTile
-    in
-        div [ style [ "lineHeight" ~> "0" ] ] (List.map lazyViewTile tilesRow)
-
-
-viewPausePlayButton : Bool -> Html Msg
-viewPausePlayButton isRunning =
-    let
-        label =
-            if isRunning then
-                "Pause"
-            else
-                "Play"
-    in
-        button [ onClick Pause ] [ text label ]
+    div [ style [ "lineHeight" ~> "0" ] ] (List.map (lazy viewTile) tilesRow)
 
 
 view : Model -> Html Msg
@@ -328,6 +280,9 @@ view model =
                 |> .tilesMatrix
                 |> Matrix.toList
                 |> List.map (\tileRow -> viewTilesRow tileRow)
+
+        fps =
+            toString model.fps
 
         frame =
             toString model.frame
@@ -353,8 +308,9 @@ view model =
         div [ style layoutStyle ]
             [ div [ style tilesMatrixStyle ] tiles
             , div [ style textStyle ]
-                [ text ("frame " ++ frame ++ "  ")
-                , lazy viewPausePlayButton model.isRunning
+                [ text (fps ++ " fps")
+                , text " | "
+                , text ("frame " ++ frame)
                 ]
             ]
 
