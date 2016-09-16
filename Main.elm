@@ -136,8 +136,8 @@ turnRight direction =
             North
 
 
-getNextLocation : Matrix.Location -> Direction -> Matrix.Location
-getNextLocation location direction =
+getNextLocation : Direction -> Matrix.Location -> Matrix.Location
+getNextLocation direction location =
     let
         ( x, y ) =
             location
@@ -187,18 +187,13 @@ hasReachedEdges location tilesMatrix =
             False
 
 
-computeNextTilesMatrix : Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
-computeNextTilesMatrix nextLocation color tilesMatrix =
-    Matrix.set nextLocation color tilesMatrix
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick dt ->
             let
                 nextLocation =
-                    getNextLocation model.location model.direction
+                    getNextLocation model.direction model.location
 
                 nextColor =
                     getTileColor nextLocation model.tilesMatrix
@@ -212,7 +207,7 @@ update msg model =
                             turnLeft model.direction
 
                 nextTilesMatrix =
-                    computeNextTilesMatrix nextLocation nextColor model.tilesMatrix
+                    Matrix.set nextLocation nextColor model.tilesMatrix
             in
                 ( { model
                     | direction = nextDirection
@@ -281,12 +276,6 @@ view model =
                 |> Matrix.toList
                 |> List.map (\tileRow -> viewTilesRow tileRow)
 
-        fps =
-            toString model.fps
-
-        frame =
-            toString model.frame
-
         layoutStyle =
             [ "padding" ~> "20px" ]
 
@@ -308,9 +297,11 @@ view model =
         div [ style layoutStyle ]
             [ div [ style tilesMatrixStyle ] tiles
             , div [ style textStyle ]
-                [ text (fps ++ " fps")
+                [ (text << toString) model.fps
+                , text " fps"
                 , text " | "
-                , text ("frame " ++ frame)
+                , text "frame "
+                , (text << toString) model.frame
                 ]
             ]
 
