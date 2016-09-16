@@ -187,8 +187,8 @@ hasReachedEdges location tilesMatrix =
             False
 
 
-computeNextTilesMatrix : Matrix.Location -> Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
-computeNextTilesMatrix location nextLocation color tilesMatrix =
+computeNextTilesMatrix : Matrix.Location -> Color -> TilesMatrix -> TilesMatrix
+computeNextTilesMatrix nextLocation color tilesMatrix =
     Matrix.set nextLocation color tilesMatrix
 
 
@@ -212,7 +212,7 @@ update msg model =
                             turnLeft model.direction
 
                 nextTilesMatrix =
-                    computeNextTilesMatrix model.location nextLocation nextColor model.tilesMatrix
+                    computeNextTilesMatrix nextLocation nextColor model.tilesMatrix
             in
                 ( { model
                     | direction = nextDirection
