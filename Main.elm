@@ -42,8 +42,7 @@ type alias Model =
     { direction : Direction
     , fps : Int
     , frame : Int
-    , isEdgesReached : Bool
-    , isRunning : Bool
+    , isEdgeReached : Bool
     , location : Matrix.Location
     , tilesMatrix : TilesMatrix
     }
@@ -72,8 +71,7 @@ init =
     ( { direction = North
       , fps = 0
       , frame = 0
-      , isEdgesReached = False
-      , isRunning = True
+      , isEdgeReached = False
       , location = initLocation
       , tilesMatrix = initMatrix
       }
@@ -213,7 +211,7 @@ update msg model =
                     | direction = nextDirection
                     , fps = round (1000 / dt)
                     , frame = model.frame + 1
-                    , isEdgesReached = hasReachedEdges nextLocation nextTilesMatrix
+                    , isEdgeReached = hasReachedEdges nextLocation nextTilesMatrix
                     , location = nextLocation
                     , tilesMatrix = nextTilesMatrix
                   }
@@ -227,12 +225,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.isEdgesReached then
+    if model.isEdgeReached then
         Sub.none
-    else if model.isRunning then
-        AnimationFrame.diffs Tick
     else
-        Sub.none
+        AnimationFrame.diffs Tick
 
 
 
