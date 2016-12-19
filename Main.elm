@@ -1,10 +1,9 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, button, text)
+import Html exposing (Html, program, div, button, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Html.Lazy exposing (lazy)
-import Html.App as App
 import Time exposing (Time)
 import AnimationFrame
 import Matrix exposing (Matrix)
@@ -307,7 +306,7 @@ view model =
 
 
 main =
-    App.program
+    program
         { init = init
         , view = view
         , update = update
